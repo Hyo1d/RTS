@@ -6,6 +6,13 @@ const PUBLIC_FILE = /\.(.*)$/;
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  if (request.nextUrl.searchParams.has("code") && !pathname.startsWith("/auth/callback")) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = "/auth/callback";
+    return NextResponse.redirect(redirectUrl);
+  }
+
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/auth/callback") ||

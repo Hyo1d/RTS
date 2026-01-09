@@ -88,6 +88,15 @@ components/
 - `SUPABASE_SERVICE_ROLE_KEY` (si necesitas operaciones admin)
 - No subas credenciales al repo: usá `.env.local` (ignorado por git) y/o Environment Variables de Vercel.
 
+## Login con Google (Supabase Auth)
+
+En Supabase → Authentication → URL Configuration:
+
+- `Site URL`: `https://rtsweb.vercel.app` (y `http://localhost:3000` en desarrollo si lo usás)
+- `Redirect URLs`:
+  - `https://rtsweb.vercel.app/auth/callback`
+  - `http://localhost:3000/auth/callback`
+
 ## Desarrollo
 
 - `npm run dev` inicia el entorno local.
