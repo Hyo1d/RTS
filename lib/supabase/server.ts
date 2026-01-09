@@ -2,15 +2,14 @@ import { createServerClient as createSupabaseServerClient } from "@supabase/ssr"
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { cookies as nextCookies } from "next/headers";
 import type { Database } from "@/lib/types/supabase";
+import { assertSupabaseEnv } from "@/lib/supabase/env";
 
 export const createServerClient = async () => {
   const cookieStore = await nextCookies();
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  if (!supabaseUrl || !supabaseKey) {
-    throw new Error("Missing Supabase environment variables.");
-  }
+  const { url: supabaseUrl, anonKey: supabaseKey } = assertSupabaseEnv([
+    "url",
+    "anonKey"
+  ]);
 
   return createSupabaseServerClient<Database>(supabaseUrl, supabaseKey, {
     cookies: {

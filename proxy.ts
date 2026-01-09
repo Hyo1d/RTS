@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { getSupabaseEnv } from "@/lib/supabase/env";
 
 const PUBLIC_FILE = /\.(.*)$/;
 
@@ -14,8 +15,7 @@ export async function proxy(request: NextRequest) {
   }
 
   let response = NextResponse.next();
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const { url: supabaseUrl, anonKey: supabaseKey } = getSupabaseEnv();
 
   if (!supabaseUrl || !supabaseKey) {
     return response;

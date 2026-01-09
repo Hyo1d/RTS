@@ -86,6 +86,7 @@ components/
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY` (si necesitas operaciones admin)
+- No subas credenciales al repo: usá `.env.local` (ignorado por git) y/o Environment Variables de Vercel.
 
 ## Desarrollo
 
