@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <path
+    d="M32 6L52 13V30C52 44.5 42.4 56 32 58C21.6 56 12 44.5 12 30V13L32 6Z"
+    fill="#0FB9B1"
+  />
+  <path
+    d="M32 6L52 13V30C52 44.5 42.4 56 32 58C21.6 56 12 44.5 12 30V13L32 6Z"
+    stroke="#0B8F89"
+    stroke-width="2"
+  />
+  <path
+    d="M26 33.5L30 37.5L39 28.5"
+    stroke="#FFFFFF"
+    stroke-width="3"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>

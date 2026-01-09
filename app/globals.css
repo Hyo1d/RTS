@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 0 0% 100%;
+  --foreground: 0 0% 5%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 5%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 5%;
+  --primary: 0 0% 5%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 0 0% 10%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 0 0% 96%;
+  --muted-foreground: 0 0% 40%;
+  --accent: 174 84% 38%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 0% 12%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 0 0% 85%;
+  --input: 0 0% 90%;
+  --ring: 174 84% 38%;
+  --radius: 12px;
+}
+
+.dark {
+  --background: 0 0% 5%;
+  --foreground: 0 0% 98%;
+  --card: 0 0% 8%;
+  --card-foreground: 0 0% 98%;
+  --popover: 0 0% 8%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 0 0% 98%;
+  --primary-foreground: 0 0% 5%;
+  --secondary: 0 0% 12%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 0 0% 15%;
+  --muted-foreground: 0 0% 70%;
+  --accent: 174 84% 38%;
+  --accent-foreground: 0 0% 5%;
+  --destructive: 0 0% 20%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 20%;
+  --input: 0 0% 20%;
+  --ring: 174 84% 38%;
+}
+
+* {
+  @apply border-border;
+}
+
+body {
+  @apply bg-background text-foreground antialiased;
+  min-height: 100vh;
+}
+
+.gradient-shell {
+  background:
+    radial-gradient(circle at top left, rgba(15, 185, 177, 0.14), transparent 48%),
+    radial-gradient(circle at 30% 20%, rgba(0, 0, 0, 0.08), transparent 55%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(245, 245, 245, 0.8));
+}
+
+.dark .gradient-shell {
+  background:
+    radial-gradient(circle at top left, rgba(15, 185, 177, 0.18), transparent 48%),
+    radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.05), transparent 55%),
+    linear-gradient(135deg, rgba(5, 5, 5, 0.95), rgba(17, 17, 17, 0.9));
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
