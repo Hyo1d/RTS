@@ -4,11 +4,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/utils/date";
-import {
-  getMedicalCertificateExpiry,
-  getMedicalCertificateStatus
-} from "@/lib/utils/medical-certificates";
-import { Badge, type BadgeProps } from "@/components/ui/badge";
+import { getMedicalCertificateExpiry } from "@/lib/utils/medical-certificates";
 import {
   Card,
   CardContent,
@@ -61,8 +57,9 @@ export function EmployeeDocumentsTable({
   variant = "default"
 }: EmployeeDocumentsTableProps) {
   const [openingId, setOpeningId] = useState<string | null>(null);
-  const showSignature = variant === "uniform";
-  const showValidity = variant === "medical";
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const showSigningDetails = variant === "uniform";
+  const showExpiry = variant === "medical";
 
   const employeeMap = useMemo(
     () =>
@@ -74,20 +71,9 @@ export function EmployeeDocumentsTable({
     [employees]
   );
 
-  const getValidityMeta = (
-    uploadedAt?: string | null
-  ): { expiryLabel: string; label: string; badgeVariant: BadgeProps["variant"] } => {
+  const getExpiryLabel = (uploadedAt?: string | null): string => {
     const expiry = getMedicalCertificateExpiry(uploadedAt);
-    const status = getMedicalCertificateStatus(uploadedAt);
-    const label =
-      status === "valid" ? "Vigente" : status === "expired" ? "Vencido" : "Pendiente";
-    const badgeVariant =
-      status === "valid" ? "success" : status === "expired" ? "destructive" : "secondary";
-    return {
-      expiryLabel: expiry ? formatDate(expiry) : "-",
-      label,
-      badgeVariant
-    };
+    return expiry ? formatDate(expiry) : "-";
   };
 
   const handleOpenFile = async (id?: string) => {
@@ -108,13 +94,18 @@ export function EmployeeDocumentsTable({
     setOpeningId(null);
   };
 
-  const handleOpenSignature = (signatureUrl?: string | null) => {
-    if (!signatureUrl) {
-      toast.error("No hay firma cargada");
+  const handleDownloadFile = async (id?: string) => {
+    if (!id) {
+      toast.error("No hay archivo adjunto");
       return;
     }
-    window.open(signatureUrl, "_blank", "noopener,noreferrer");
+
+    setDownloadingId(id);
+    window.open(`/api/employee-documents/${id}/download`, "_blank", "noopener,noreferrer");
+    setDownloadingId(null);
   };
+
+  const columnCount = 4 + (showSigningDetails ? 2 : 0) + (showExpiry ? 1 : 0);
 
   return (
     <Card className="flex flex-col gap-4">
@@ -130,7 +121,7 @@ export function EmployeeDocumentsTable({
             </div>
           ) : (
             documents.map((doc) => {
-              const validity = showValidity ? getValidityMeta(doc.uploaded_at) : null;
+              const expiryLabel = showExpiry ? getExpiryLabel(doc.uploaded_at) : null;
               return (
                 <div
                   key={doc.id}
@@ -147,46 +138,33 @@ export function EmployeeDocumentsTable({
                       {formatDate(doc.uploaded_at)}
                     </span>
                   </div>
-                  {showSignature && (
-                    <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
-                      <span>Firma</span>
-                      <div className="flex items-center gap-2">
-                        <Badge variant={doc.signed_at ? "success" : "secondary"}>
-                          {doc.signed_at ? "Firmado" : "Pendiente"}
-                        </Badge>
-                        {doc.signature_data_url && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleOpenSignature(doc.signature_data_url)}
-                          >
-                            Ver firma
-                          </Button>
-                        )}
+                  {showSigningDetails && (
+                    <div className="mt-3 grid gap-1 text-xs text-muted-foreground">
+                      <div className="flex items-center justify-between">
+                        <span>Firmado por</span>
+                        <span className="font-medium text-foreground">
+                          {doc.signed_name ?? "-"}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span>Fecha firma</span>
+                        <span className="font-medium text-foreground">
+                          {doc.signed_at ? formatDate(doc.signed_at) : "-"}
+                        </span>
                       </div>
                     </div>
                   )}
-                  {showSignature && doc.signed_at && (
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {doc.signed_name ?? "Empleado"} - {formatDate(doc.signed_at)}
-                    </p>
+                  {showExpiry && (
+                    <div className="mt-3 grid gap-1 text-xs text-muted-foreground">
+                      <div className="flex items-center justify-between">
+                        <span>Vence</span>
+                        <span className="font-medium text-foreground">
+                          {expiryLabel ?? "-"}
+                        </span>
+                      </div>
+                    </div>
                   )}
-                {showValidity && validity && (
-                  <div className="mt-3 grid gap-1 text-xs text-muted-foreground">
-                    <div className="flex items-center justify-between">
-                      <span>Vigencia</span>
-                      <span className="font-medium text-foreground">
-                        {validity.expiryLabel}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span>Estado</span>
-                      <Badge variant={validity.badgeVariant}>{validity.label}</Badge>
-                    </div>
-                  </div>
-                )}
-                  <div className="mt-3">
+                  <div className="mt-4 grid gap-2">
                     <Button
                       variant="outline"
                       size="sm"
@@ -194,7 +172,16 @@ export function EmployeeDocumentsTable({
                       onClick={() => handleOpenFile(doc.id)}
                       disabled={openingId === doc.id}
                     >
-                      {openingId === doc.id ? "Abriendo..." : "Abrir archivo"}
+                      {openingId === doc.id ? "Abriendo..." : "Ver PDF"}
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="w-full"
+                      onClick={() => handleDownloadFile(doc.id)}
+                      disabled={downloadingId === doc.id}
+                    >
+                      {downloadingId === doc.id ? "Descargando..." : "Descargar PDF"}
                     </Button>
                   </div>
                 </div>
@@ -210,15 +197,16 @@ export function EmployeeDocumentsTable({
                 <TableHead>Documento</TableHead>
                 <TableHead>Empleado</TableHead>
                 <TableHead>Fecha</TableHead>
-                {showSignature && <TableHead>Firma</TableHead>}
-                {showValidity && <TableHead>Vigencia</TableHead>}
-                <TableHead>Accion</TableHead>
+                {showSigningDetails && <TableHead>Firmado por</TableHead>}
+                {showSigningDetails && <TableHead>Fecha firma</TableHead>}
+                {showExpiry && <TableHead>Vence</TableHead>}
+                <TableHead>PDF</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {documents.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={showSignature || showValidity ? 5 : 4}>
+                  <TableCell colSpan={columnCount}>
                     <div className="py-8 text-center text-sm text-muted-foreground">
                       {emptyMessage}
                     </div>
@@ -226,7 +214,7 @@ export function EmployeeDocumentsTable({
                 </TableRow>
               ) : (
                 documents.map((doc) => {
-                  const validity = showValidity ? getValidityMeta(doc.uploaded_at) : null;
+                  const expiryLabel = showExpiry ? getExpiryLabel(doc.uploaded_at) : null;
                   return (
                     <TableRow key={doc.id}>
                       <TableCell>
@@ -234,50 +222,32 @@ export function EmployeeDocumentsTable({
                       </TableCell>
                       <TableCell>{employeeMap[doc.employee_id ?? ""] ?? "-"}</TableCell>
                       <TableCell>{formatDate(doc.uploaded_at)}</TableCell>
-                      {showSignature && (
-                        <TableCell>
-                          <div className="flex flex-col gap-1">
-                            <Badge variant={doc.signed_at ? "success" : "secondary"}>
-                              {doc.signed_at ? "Firmado" : "Pendiente"}
-                            </Badge>
-                            {doc.signed_at && (
-                              <span className="text-xs text-muted-foreground">
-                                {doc.signed_name ?? "Empleado"} - {formatDate(doc.signed_at)}
-                              </span>
-                            )}
-                            {doc.signature_data_url && (
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                className="w-fit"
-                                onClick={() => handleOpenSignature(doc.signature_data_url)}
-                              >
-                                Ver firma
-                              </Button>
-                            )}
-                          </div>
-                        </TableCell>
+                      {showSigningDetails && (
+                        <TableCell>{doc.signed_name ?? "-"}</TableCell>
                       )}
-                      {showValidity && validity && (
-                        <TableCell>
-                          <div className="flex flex-col gap-1">
-                            <span className="text-sm font-medium">
-                              {validity.expiryLabel}
-                            </span>
-                            <Badge variant={validity.badgeVariant}>{validity.label}</Badge>
-                          </div>
-                        </TableCell>
+                      {showSigningDetails && (
+                        <TableCell>{doc.signed_at ? formatDate(doc.signed_at) : "-"}</TableCell>
                       )}
+                      {showExpiry && <TableCell>{expiryLabel ?? "-"}</TableCell>}
                       <TableCell>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleOpenFile(doc.id)}
-                          disabled={openingId === doc.id}
-                        >
-                          {openingId === doc.id ? "Abriendo..." : "Abrir"}
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleOpenFile(doc.id)}
+                            disabled={openingId === doc.id}
+                          >
+                            {openingId === doc.id ? "Abriendo..." : "Ver PDF"}
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => handleDownloadFile(doc.id)}
+                            disabled={downloadingId === doc.id}
+                          >
+                            {downloadingId === doc.id ? "Descargando..." : "Descargar"}
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   );

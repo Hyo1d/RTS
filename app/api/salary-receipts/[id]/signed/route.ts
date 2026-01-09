@@ -21,6 +21,7 @@ export async function GET(
   context: { params: Promise<{ id: string }> }
 ) {
   const { id: receiptId } = await context.params;
+  const download = request.nextUrl.searchParams.get("download") === "1";
 
   if (!receiptId || receiptId === "undefined") {
     return new Response("ID de recibo inválido", { status: 400 });
@@ -59,28 +60,28 @@ export async function GET(
     const firstPage = pages[0];
     const { width: pageWidth, height: pageHeight } = firstPage.getSize();
 
-    const signatureMaxWidth = Math.min(200, pageWidth * 0.22);
-    const signatureMaxHeight = Math.min(80, pageHeight * 0.14);
+    const target = { x: 260, y: 58, width: 166, height: 37 };
     const signatureScale = Math.min(
-      signatureMaxWidth / signatureImage.width,
-      signatureMaxHeight / signatureImage.height
+      target.width / signatureImage.width,
+      target.height / signatureImage.height
     );
     const signatureWidth = signatureImage.width * signatureScale;
     const signatureHeight = signatureImage.height * signatureScale;
 
-    const y = Math.max(32, pageHeight * 0.07);
-    const centerXs =
-      pageWidth > pageHeight
-        ? [pageWidth * 0.25, pageWidth * 0.75]
-        : [pageWidth * 0.5];
+    const x = Math.max(
+      0,
+      Math.min(target.x + (target.width - signatureWidth) / 2, pageWidth - signatureWidth)
+    );
+    const y = Math.max(
+      0,
+      Math.min(target.y + (target.height - signatureHeight) / 2, pageHeight - signatureHeight)
+    );
 
-    centerXs.forEach((centerX) => {
-      firstPage.drawImage(signatureImage, {
-        x: centerX - signatureWidth / 2,
-        y,
-        width: signatureWidth,
-        height: signatureHeight,
-      });
+    firstPage.drawImage(signatureImage, {
+      x,
+      y,
+      width: signatureWidth,
+      height: signatureHeight,
     });
 
     const pdfBytes = await pdfDoc.save();
@@ -94,7 +95,7 @@ export async function GET(
     return new Response(pdfBody, {
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `inline; filename="${signedName}"`,
+        "Content-Disposition": `${download ? "attachment" : "inline"}; filename="${signedName}"`,
       },
     });
   } catch (error) {

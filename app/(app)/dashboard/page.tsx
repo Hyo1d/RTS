@@ -110,25 +110,29 @@ export default async function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="scrollbar-hide -mx-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-3 pb-1 sm:-mx-4 sm:px-4 md:mx-0 md:grid md:snap-none md:grid-cols-2 md:gap-4 md:overflow-visible md:px-0 md:pb-0 xl:grid-cols-4">
         <MetricCard
           label="Total empleados"
           value={String(totalEmployees)}
+          className="min-w-[220px] shrink-0 snap-start md:min-w-0 md:shrink"
           icon={<Users className="h-4 w-4 sm:h-5 sm:w-5" />}
         />
         <MetricCard
           label="Activos"
           value={String(activeEmployees)}
+          className="min-w-[220px] shrink-0 snap-start md:min-w-0 md:shrink"
           icon={<UserCheck className="h-4 w-4 sm:h-5 sm:w-5" />}
         />
         <MetricCard
           label="Vacaciones"
           value={String(vacationEmployees)}
+          className="min-w-[220px] shrink-0 snap-start md:min-w-0 md:shrink"
           icon={<CalendarCheck className="h-4 w-4 sm:h-5 sm:w-5" />}
         />
         <MetricCard
           label="Licencias"
           value={String(onLeaveEmployees)}
+          className="min-w-[220px] shrink-0 snap-start md:min-w-0 md:shrink"
           icon={<UserMinus className="h-4 w-4 sm:h-5 sm:w-5" />}
         />
       </div>
